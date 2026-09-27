@@ -2,9 +2,9 @@ name: Differential Fuzz
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
   schedule:
     # Nightly extended run at 2 AM UTC
     - cron: '0 2 * * *'
