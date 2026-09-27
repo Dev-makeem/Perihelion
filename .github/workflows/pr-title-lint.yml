@@ -28,6 +28,9 @@ jobs:
             test
             chore
             ci
+          # Keep in step with the repository layout. deps / deps-dev are the
+          # scopes Dependabot uses (see commit-message in .github/dependabot.yml);
+          # without them every automated dependency PR fails this check.
           scopes: |
             evm
             soroban
@@ -35,8 +38,14 @@ jobs:
             relayer
             solver
             mempool
+            test
+            shared
+            scripts
             docs
             ci
+            docker
+            deps
+            deps-dev
           requireScope: false
           subjectLength: 100
           wip: true
