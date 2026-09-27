@@ -11,6 +11,11 @@ name: CI
 #              | .github/workflows/evm.yml                      | test, and Slither
 # soroban.yml  | contracts/soroban/**                           | Rust build, test,
 #              | .github/workflows/soroban.yml                  | and clippy
+# coverage.yml | sdk/, relayer/, solver/, mempool/,             | Per-stack coverage
+#              | contracts/soroban/**, contracts/evm/**,        | (ts/soroban/evm),
+#              | package.json, package-lock.json, .nvmrc,       | scoped per job via
+#              | tsconfig.base.json,                            | dorny/paths-filter
+#              | .github/workflows/coverage.yml                 |
 # diff-fuzz.yml| (all paths; schedule + dispatch)               | Differential fuzz
 #              |                                                | + cross-validation
 # pr-lint.yml  | (all PRs)                                      | Conventional-

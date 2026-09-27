@@ -26,6 +26,7 @@
         clean                                  \
         fuzz fuzz-bounded fuzz-extended fuzz-nightly \
         fuzz-evm fuzz-rust fuzz-cross          \
+        mutation mutation-ts mutation-soroban  \
         clean-corpus                           \
         doctor
 
@@ -52,6 +53,10 @@ help: ## Show available targets
 	@echo ''
 	@echo 'Fuzzing targets:'
 	@grep -E '^fuzz[a-zA-Z_-]*:.*?## ' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-22s %s\n", $$1, $$2}'
+	@echo ''
+	@echo 'Mutation testing (slow — the nightly CI job runs these same targets):'
+	@grep -E '^mutation[a-zA-Z_-]*:.*?## ' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  %-22s %s\n", $$1, $$2}'
 	@echo ''
 	@echo 'Diagnostics:'
@@ -400,3 +405,30 @@ doctor: ## Report installed toolchain versions vs their pinned versions
 # ─────────────────────────────────────────────────────────────────────────────
 
 .DEFAULT_GOAL := help
+
+# ─────────────────────────────────────────────────────────────────────────────
+# MUTATION TESTING
+# ─────────────────────────────────────────────────────────────────────────────
+# Configuration is committed (stryker*.config.mjs, .cargo-mutants.toml) and
+# .github/workflows/mutation-testing.yml invokes the same commands, so local
+# and nightly runs exercise identical settings. Both targets fail when the
+# score drops below the recorded baseline. See docs/mutation-testing.md.
+
+mutation: mutation-ts mutation-soroban ## Run all mutation testing (TypeScript + Soroban)
+
+mutation-ts: ## Run Stryker on the SDK, relayer and solver (fails below thresholds.break)
+	@echo "▶ mutation-ts"
+	@status=0; \
+	npx stryker run stryker.sdk.config.mjs || status=1; \
+	npx stryker run stryker.services.config.mjs || status=1; \
+	exit $$status
+
+mutation-soroban: ## Run cargo-mutants on the settlement contract (fails below baseline)
+	@echo "▶ mutation-soroban"
+	@if command -v cargo-mutants >/dev/null 2>&1; then \
+		cd contracts/soroban/settlement && cargo mutants --timeout 120 --output . ; \
+		rc=$$?; if [ $$rc -ne 0 ] && [ $$rc -ne 2 ] && [ $$rc -ne 3 ]; then exit $$rc; fi; \
+		cd - >/dev/null && node scripts/check-cargo-mutants-score.mjs contracts/soroban/settlement/mutants.out; \
+	else \
+		echo "⏭ skipping mutation-soroban — cargo-mutants not installed (cargo install cargo-mutants --locked)"; \
+	fi

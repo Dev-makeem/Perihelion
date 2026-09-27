@@ -46,12 +46,14 @@ services:
       PORT: 3000
       PERIHELION_SOURCE_CHAIN_ID: 31337
       PERIHELION_ESCROW_ADDRESS: "0x0000000000000000000000000000000000000000"
+      # Bind every interface so the relayer and solver containers can reach it.
+      PERIHELION_MEMPOOL_HOST: "0.0.0.0"
     ports:
       - "3000:3000"
     networks:
       - perihelion
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      test: ["CMD", "node", "/usr/local/lib/perihelion/healthcheck.cjs"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -88,6 +90,8 @@ services:
       PERIHELION_POLL_INTERVAL_MS: "5000"
       PERIHELION_CHECKPOINT_FILE: "/tmp/relayer-checkpoint.json"
       PERIHELION_HEALTH_PORT: "8080"
+      # Bind every interface so the published port is reachable from the host.
+      PERIHELION_HEALTH_HOST: "0.0.0.0"
       PERIHELION_READINESS_STALE_MS: "15000"
       PERIHELION_MAX_LAG_BLOCKS: "500"
     ports:
@@ -97,7 +101,7 @@ services:
     volumes:
       - relayer-checkpoint:/tmp
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test: ["CMD", "node", "/usr/local/lib/perihelion/healthcheck.cjs"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -136,18 +140,21 @@ services:
       # Executor configuration (Soroban)
       PERIHELION_SOROBAN_RPC_URL: http://stellar:8000
       PERIHELION_SOROBAN_SECRET_KEY: ${PERIHELION_SOROBAN_SECRET_KEY:?set PERIHELION_SOROBAN_SECRET_KEY}
+      STELLAR_NETWORK: "Test SDF Network ; September 2015"
       PERIHELION_SETTLEMENT_CONTRACT_ID: "CA7QYNF7SOWQ3GLR4CIDVXIUCMEOBEEUHW5C33ATIO5Q5TR3LYAQHRJS"
       # Cache configuration
       PERIHELION_VERIFICATION_CACHE_SIZE: "10000"
       PERIHELION_SEEN_CACHE_SIZE: "50000"
       # Metrics
       PERIHELION_METRICS_PORT: "9090"
+      # Bind every interface so the published port is reachable from the host.
+      PERIHELION_METRICS_HOST: "0.0.0.0"
     ports:
       - "9090:9090"
     networks:
       - perihelion
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9090/healthz"]
+      test: ["CMD", "node", "/usr/local/lib/perihelion/healthcheck.cjs"]
       interval: 30s
       timeout: 5s
       retries: 3

@@ -65,3 +65,9 @@ Thumbs.db
 *.orig
 *.bak
 *.tmp
+
+# Mutation testing output
+.stryker-tmp/
+reports/mutation/
+mutants.out/
+mutants.out.old/

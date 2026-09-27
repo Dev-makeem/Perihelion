@@ -3,8 +3,33 @@ name: Coverage
 on:
   push:
     branches: [main]
+    paths:
+      - "sdk/**"
+      - "solver/**"
+      - "relayer/**"
+      - "mempool/**"
+      - "contracts/soroban/**"
+      - "contracts/evm/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - "tsconfig.base.json"
+      - ".github/workflows/coverage.yml"
   pull_request:
     branches: [main]
+    paths:
+      - "sdk/**"
+      - "solver/**"
+      - "relayer/**"
+      - "mempool/**"
+      - "contracts/soroban/**"
+      - "contracts/evm/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - "tsconfig.base.json"
+      - ".github/workflows/coverage.yml"
+  workflow_dispatch:
 
 # Cancel superseded runs on the same ref.
 concurrency:
@@ -20,9 +45,40 @@ permissions:
   contents: read
 
 jobs:
+  # Determine which stacks changed so each coverage job runs only for its own
+  # stack (e.g. an sdk/ change does not trigger Soroban or EVM coverage).
+  changes:
+    name: Detect changed stacks
+    runs-on: ubuntu-latest
+    outputs:
+      ts: ${{ steps.filter.outputs.ts }}
+      soroban: ${{ steps.filter.outputs.soroban }}
+      evm: ${{ steps.filter.outputs.evm }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            ts:
+              - 'sdk/**'
+              - 'solver/**'
+              - 'relayer/**'
+              - 'mempool/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.nvmrc'
+              - 'tsconfig.base.json'
+            soroban:
+              - 'contracts/soroban/**'
+            evm:
+              - 'contracts/evm/**'
+
   # ── TypeScript (sdk / solver / relayer / mempool) ───────────────────────────
   ts-coverage:
     name: TypeScript Coverage (${{ matrix.package }})
+    needs: changes
+    if: needs.changes.outputs.ts == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -60,6 +116,8 @@ jobs:
   # ── Soroban (Rust) ───────────────────────────────────────────────────────────
   soroban-coverage:
     name: Soroban Coverage
+    needs: changes
+    if: needs.changes.outputs.soroban == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -119,6 +177,8 @@ jobs:
   # ── EVM (Solidity / Foundry) ─────────────────────────────────────────────────
   evm-coverage:
     name: EVM Coverage
+    needs: changes
+    if: needs.changes.outputs.evm == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
