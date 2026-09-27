@@ -16,6 +16,7 @@ on:
       - '.github/workflows/docs.yml'
       - 'scripts/check-status-links.mjs'
       - '.github/fixtures/**'
+      - '.mlc-config.json'
   pull_request:
     branches: [main]
     paths:
@@ -27,6 +28,7 @@ on:
       - '.github/workflows/docs.yml'
       - 'scripts/check-status-links.mjs'
       - '.github/fixtures/**'
+      - '.mlc-config.json'
 
 concurrency:
   group: docs-${{ github.ref }}
