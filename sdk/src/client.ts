@@ -482,20 +482,33 @@ export class PerihelionClient {
    *   the value is timelock-governed and can change after deployment.
    *   There is deliberately no default; passing a stale constant will produce
    *   an incorrect verdict.
+   * @param now Current time in unix seconds. Defaults to the local clock, but
+   *   pass chain time here when available to avoid client-clock disagreements
+   *   with the on-chain `block.timestamp` check that `cancelExpired` performs.
+   * @param clockSkew Seconds to bias toward "not yet refundable" near the
+   *   boundary, mirroring {@link isExpired}'s `clockSkew` parameter. Useful
+   *   when `now` comes from a client clock that may run fast.
+   *   Default: `0`.
    * @returns `true` if the intent can be refunded via `cancelExpired`.
    *
    * @see {PerihelionEscrowClient.confirmationGrace} to read the live grace period.
    */
-  isRefundable(record: IntentRecord, confirmationGraceMs: number): boolean {
+  isRefundable(
+    record: IntentRecord,
+    confirmationGraceMs: number,
+    now: number = Math.floor(Date.now() / 1_000),
+    clockSkew = 0,
+  ): boolean {
     // Condition 3: only 'pending' intents are candidates — no settlement is
-    // in progress or has already completed.
+    // in progress or has already completed. This also excludes 'settling',
+    // which has a cross-chain message in flight and must not be treated as
+    // refundable purely on elapsed time.
     if (record.status !== "pending") {
       return false;
     }
     // Conditions 1 & 2: deadline + grace must have passed (unix seconds).
-    const now = Math.floor(Date.now() / 1_000);
     const deadlineWithGrace = record.intent.deadline + Math.floor(confirmationGraceMs / 1_000);
-    return now >= deadlineWithGrace;
+    return now - clockSkew >= deadlineWithGrace;
   }
 
   // ─── private helpers ───────────────────────────────────────────────────────
