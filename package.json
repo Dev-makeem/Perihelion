@@ -31,5 +31,8 @@
   "devDependencies": {
     "lefthook": "^1.7.0",
     "typescript": "^5.4.0"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
   }
 }
