@@ -32,6 +32,10 @@ concurrency:
   group: docs-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default; jobs only check out and lint docs.
+permissions:
+  contents: read
+
 jobs:
   openapi-lint:
     name: Lint mempool OpenAPI spec

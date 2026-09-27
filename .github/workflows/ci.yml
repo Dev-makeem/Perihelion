@@ -56,6 +56,10 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default; jobs only check out, build, and test.
+permissions:
+  contents: read
+
 jobs:
   typescript:
     name: TypeScript (Node ${{ matrix.node }})

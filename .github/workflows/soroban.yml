@@ -12,6 +12,10 @@ concurrency:
   group: soroban-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default; jobs only check out, build, and test.
+permissions:
+  contents: read
+
 jobs:
   soroban:
     name: Soroban (Rust)

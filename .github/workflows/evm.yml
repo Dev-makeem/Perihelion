@@ -16,6 +16,10 @@ concurrency:
   group: evm-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default; jobs override this where a broader scope is needed.
+permissions:
+  contents: read
+
 jobs:
   evm:
     name: EVM (Solidity)

@@ -41,6 +41,10 @@ concurrency:
   group: dependency-audit-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default; jobs only check out and run audit tools.
+permissions:
+  contents: read
+
 jobs:
   npm-audit:
     name: npm audit

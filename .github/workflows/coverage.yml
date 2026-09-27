@@ -15,6 +15,10 @@ env:
   # Keep in step with .github/workflows/evm.yml and CONTRIBUTING.md.
   FOUNDRY_VERSION: stable
 
+# Least-privilege default; jobs only check out, build, and upload coverage.
+permissions:
+  contents: read
+
 jobs:
   # ── TypeScript (sdk / solver / relayer / mempool) ───────────────────────────
   ts-coverage:

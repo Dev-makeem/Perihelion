@@ -29,6 +29,10 @@ concurrency:
   group: mutation-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default; jobs only check out, build, and run mutation tools.
+permissions:
+  contents: read
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Soroban / Rust: cargo-mutants
 # ─────────────────────────────────────────────────────────────────────────────
