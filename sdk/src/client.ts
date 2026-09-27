@@ -23,7 +23,7 @@ import type {
   Hex,
   Intent,
   IntentRecord,
-  IntentStatus,
+  MempoolIntentStatus,
   SignedIntent,
 } from "./types.js";
 
@@ -217,7 +217,7 @@ export class PerihelionClient {
    * @throws {@link PerihelionTimeoutError} if the request exceeds `requestTimeoutMs`.
    * @throws {@link PerihelionNetworkError} on network / transport failure.
    */
-  async reportStatus(hash: Hex, status: IntentStatus, statusToken: string): Promise<void> {
+  async reportStatus(hash: Hex, status: MempoolIntentStatus, statusToken: string): Promise<void> {
     let res: Response;
     try {
       res = await this.fetchWithTimeout(`${this.base}/intents/${hash}/status`, {
@@ -289,7 +289,7 @@ export class PerihelionClient {
    * @throws {@link PerihelionNetworkError} on non-retryable network failure.
    */
   async listPendingPage(
-    status: IntentStatus = "pending",
+    status: MempoolIntentStatus = "pending",
     cursor?: string,
     limit?: number,
   ): Promise<ListPendingPageResult> {
@@ -326,7 +326,7 @@ export class PerihelionClient {
    * **Retry policy**: Each page request retries transient failures up to `maxRetries` times.
    */
   async *listPendingPages(
-    status: IntentStatus = "pending",
+    status: MempoolIntentStatus = "pending",
     limit?: number,
   ): AsyncGenerator<IntentRecord[], void, unknown> {
     let cursor: string | undefined;
@@ -359,7 +359,7 @@ export class PerihelionClient {
    * server's own default, so page size stays bounded end-to-end (issue #532).
    */
   async listPending(
-    status: IntentStatus = "pending",
+    status: MempoolIntentStatus = "pending",
     maxPages = 100,
     limit: number = DEFAULT_LIST_LIMIT,
   ): Promise<IntentRecord[]> {
